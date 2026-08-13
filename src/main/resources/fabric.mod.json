@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "highlightmobs",
+	"version": "${version}",
+	"name": "HighlightMobs",
+	"description": "Highlights selected entity types with Minecraft's outline effect.",
+	"authors": [
+		"deanxbox"
+	],
+	"icon": "assets/highlightmobs/icon.png",
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.deanm.highlightmobs.client.HighlightMobsClient"
+		],
+		"modmenu": [
+			"dev.deanm.highlightmobs.client.HighlightMobsModMenu"
+		]
+	},
+	"mixins": [
+		{
+			"config": "highlightmobs.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": ">=20.0.0"
+	}
+}

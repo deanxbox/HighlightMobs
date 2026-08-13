@@ -1,0 +1,22 @@
+{
+	"key.category.highlightmobs.general": "HighlightMobs",
+	"key.highlightmobs.toggle": "Enable/Disable Highlights",
+	"key.highlightmobs.settings": "Open HighlightMobs Settings",
+	"highlightmobs.message.enabled": "HighlightMobs enabled",
+	"highlightmobs.message.disabled": "HighlightMobs disabled",
+	"highlightmobs.settings.title": "HighlightMobs Settings",
+	"highlightmobs.settings.search": "Search entities",
+	"highlightmobs.settings.clear_search": "Clear Search",
+	"highlightmobs.settings.enabled": "Highlights: %s",
+	"highlightmobs.settings.on": "ON",
+	"highlightmobs.settings.off": "OFF",
+	"highlightmobs.settings.entities": "Entity Types",
+	"highlightmobs.settings.selected_count": "%s selected",
+	"highlightmobs.settings.selected": "[x] %s",
+	"highlightmobs.settings.unselected": "[ ] %s",
+	"highlightmobs.settings.no_results": "No matching entities",
+	"highlightmobs.settings.previous": "Previous",
+	"highlightmobs.settings.next": "Next",
+	"highlightmobs.settings.page": "Page %s of %s",
+	"highlightmobs.settings.clear_selected": "Clear Selected"
+}
