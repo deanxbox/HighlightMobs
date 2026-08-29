@@ -18,5 +18,6 @@
 	"highlightmobs.settings.previous": "Previous",
 	"highlightmobs.settings.next": "Next",
 	"highlightmobs.settings.page": "Page %s of %s",
-	"highlightmobs.settings.clear_selected": "Clear Selected"
+	"highlightmobs.settings.clear_selected": "Clear Selected",
+	"highlightmobs.settings.show_selected": "Show Selected: %s"
 }

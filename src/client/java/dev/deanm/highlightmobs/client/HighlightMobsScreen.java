@@ -28,6 +28,8 @@ public final class HighlightMobsScreen extends Screen {
 	private int contentLeft;
 	private int contentWidth;
 	private EditBox searchBox;
+	private boolean showSelectedOnly;
+	private List<EntityType<?>> visibleEntityTypes = List.of();
 
 	public HighlightMobsScreen(@Nullable Screen parent) {
 		super(Component.translatable("highlightmobs.settings.title"));
@@ -73,7 +75,7 @@ public final class HighlightMobsScreen extends Screen {
 		).bounds(this.contentLeft, 64, this.contentWidth, BUTTON_HEIGHT).build());
 
 		int footerY = this.height - 30;
-		int footerButtonWidth = (this.contentWidth - 4) / 2;
+		int footerButtonWidth = (this.contentWidth - 8) / 3;
 		this.addRenderableWidget(Button.builder(
 			Component.translatable("highlightmobs.settings.clear_selected"),
 			button -> {
@@ -82,8 +84,17 @@ public final class HighlightMobsScreen extends Screen {
 				this.refreshEntityWidgets();
 			}
 		).bounds(this.contentLeft, footerY, footerButtonWidth, BUTTON_HEIGHT).build());
+		this.addRenderableWidget(Button.builder(
+			this.showSelectedMessage(),
+			button -> {
+				this.showSelectedOnly = !this.showSelectedOnly;
+				button.setMessage(this.showSelectedMessage());
+				this.page = 0;
+				this.refreshEntityWidgets();
+			}
+		).bounds(this.contentLeft + footerButtonWidth + 4, footerY, footerButtonWidth, BUTTON_HEIGHT).build());
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
-			.bounds(this.contentLeft + footerButtonWidth + 4, footerY, this.contentWidth - footerButtonWidth - 4, BUTTON_HEIGHT)
+			.bounds(this.contentLeft + (footerButtonWidth + 4) * 2, footerY, this.contentWidth - (footerButtonWidth + 4) * 2, BUTTON_HEIGHT)
 			.build());
 
 		this.refreshEntityWidgets();
@@ -112,8 +123,7 @@ public final class HighlightMobsScreen extends Screen {
 		graphics.text(this.font, section, this.contentLeft, 91, -1);
 		graphics.text(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 91, -6250336);
 
-		List<EntityType<?>> matches = this.filteredEntityTypes();
-		if (matches.isEmpty()) {
+		if (this.visibleEntityTypes.isEmpty()) {
 			graphics.centeredText(this.font, Component.translatable("highlightmobs.settings.no_results"), this.width / 2, LIST_TOP + 6, -6250336);
 		}
 
@@ -132,7 +142,8 @@ public final class HighlightMobsScreen extends Screen {
 		}
 		this.entityWidgets.clear();
 
-		List<EntityType<?>> matches = this.filteredEntityTypes();
+		this.visibleEntityTypes = this.filteredEntityTypes();
+		List<EntityType<?>> matches = this.visibleEntityTypes;
 		int navigationY = this.height - 56;
 		int rows = Math.max(1, (navigationY - LIST_TOP + 4) / ROW_SPACING);
 		int pageSize = rows * 2;
@@ -174,6 +185,7 @@ public final class HighlightMobsScreen extends Screen {
 	private List<EntityType<?>> filteredEntityTypes() {
 		String query = this.search.trim().toLowerCase(Locale.ROOT);
 		return BuiltInRegistries.ENTITY_TYPE.stream()
+			.filter(type -> !this.showSelectedOnly || HighlightMobsClient.CONFIG.isSelected(type))
 			.filter(type -> {
 				String id = EntityType.getKey(type).toString();
 				String name = type.getDescription().getString();
@@ -184,6 +196,13 @@ public final class HighlightMobsScreen extends Screen {
 			.sorted(Comparator.comparing((EntityType<?> type) -> type.getDescription().getString(), String.CASE_INSENSITIVE_ORDER)
 				.thenComparing(type -> EntityType.getKey(type).toString()))
 			.toList();
+	}
+
+	private Component showSelectedMessage() {
+		return Component.translatable(
+			"highlightmobs.settings.show_selected",
+			Component.translatable(this.showSelectedOnly ? "highlightmobs.settings.on" : "highlightmobs.settings.off")
+		);
 	}
 
 	private Component enabledMessage() {
