@@ -1,10 +1,25 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
+	id 'com.modrinth.minotaur' version '2.+'
 }
 
 version = project.mod_version
 group = project.maven_group
+
+modrinth {
+	token = System.getenv('MODRINTH_TOKEN')
+	projectId = 'highlightmobs'
+	versionNumber = "${project.mod_version}+${project.minecraft_version}"
+	versionName = project.mod_version
+	versionType = 'release'
+	uploadFile = tasks.jar
+	gameVersions = project.property('game_versions').toString().split(',').collect { it.trim() }
+	loaders = ['fabric']
+	dependencies {
+		required.project 'fabric-api'
+	}
+}
 
 base {
 	archivesName = 'highlightmobs'
