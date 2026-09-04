@@ -1,34 +1,21 @@
-name: Publish
+name: Publish to Modrinth
 
 on:
   push:
-    branches:
-      - 1.21.8
+    tags:
+      - 'v*'
 
 jobs:
-  build-and-publish:
+  publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build
-        run: ./gradlew build
-
-      - name: Publish to Modrinth
-        uses: Kira-NT/mc-publish@v3
-        with:
-          modrinth-id: DhE7Nkac
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: build/libs/!(*-@(dev|sources|javadoc)).jar
-          loaders: fabric
-          name: HighlightMobs ${{ github.ref_name }}
+          java-version: '21'
+          cache: gradle
+      - name: Build and publish
+        run: chmod +x gradlew && ./gradlew build modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
