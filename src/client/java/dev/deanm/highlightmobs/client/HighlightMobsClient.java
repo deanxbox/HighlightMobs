@@ -22,13 +22,13 @@ public final class HighlightMobsClient implements ClientModInitializer {
 			"key.highlightmobs.toggle",
 			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_H,
-			"key.categories.misc"
+			"key.categories.highlightmobs"
 		));
 		settingsKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.highlightmobs.settings",
 			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_O,
-			"key.categories.misc"
+			"key.categories.highlightmobs"
 		));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
