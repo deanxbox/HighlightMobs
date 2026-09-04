@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
@@ -13,14 +13,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
-import org.jspecify.annotations.Nullable;
 
 public final class HighlightMobsScreen extends Screen {
 	private static final int LIST_TOP = 105;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
 
-	private final @Nullable Screen parent;
+	private final Screen parent;
 	private final List<Button> entityWidgets = new ArrayList<>();
 	private String search = "";
 	private int page;
@@ -31,7 +30,7 @@ public final class HighlightMobsScreen extends Screen {
 	private boolean showSelectedOnly;
 	private List<EntityType<?>> visibleEntityTypes = List.of();
 
-	public HighlightMobsScreen(@Nullable Screen parent) {
+	public HighlightMobsScreen(Screen parent) {
 		super(Component.translatable("highlightmobs.settings.title"));
 		this.parent = parent;
 	}
@@ -51,7 +50,7 @@ public final class HighlightMobsScreen extends Screen {
 			BUTTON_HEIGHT,
 			Component.translatable("highlightmobs.settings.search")
 		);
-		this.searchBox.setHint(Component.translatable("highlightmobs.settings.search").setStyle(EditBox.SEARCH_HINT_STYLE));
+		this.searchBox.setHint(Component.translatable("highlightmobs.settings.search"));
 		this.searchBox.setValue(this.search);
 		this.searchBox.setResponder(value -> {
 			this.search = value;
@@ -107,27 +106,27 @@ public final class HighlightMobsScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		this.minecraft.gui.setScreen(this.parent);
+		this.minecraft.setScreen(this.parent);
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-		super.extractRenderState(graphics, mouseX, mouseY, partialTick);
-		graphics.centeredText(this.font, this.title, this.width / 2, 15, -1);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+		super.render(graphics, mouseX, mouseY, delta);
+		graphics.drawCenteredString(this.font, this.title, this.width / 2, 15, -1);
 
 		Component section = Component.translatable("highlightmobs.settings.entities");
 		Component count = Component.translatable(
 			"highlightmobs.settings.selected_count",
 			HighlightMobsClient.CONFIG.highlightedEntityTypes.size()
 		);
-		graphics.text(this.font, section, this.contentLeft, 91, -1);
-		graphics.text(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 91, -6250336);
+		graphics.drawString(this.font, section, this.contentLeft, 91, -1);
+		graphics.drawString(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 91, -6250336);
 
 		if (this.visibleEntityTypes.isEmpty()) {
-			graphics.centeredText(this.font, Component.translatable("highlightmobs.settings.no_results"), this.width / 2, LIST_TOP + 6, -6250336);
+			graphics.drawCenteredString(this.font, Component.translatable("highlightmobs.settings.no_results"), this.width / 2, LIST_TOP + 6, -6250336);
 		}
 
-		graphics.centeredText(
+		graphics.drawCenteredString(
 			this.font,
 			Component.translatable("highlightmobs.settings.page", this.page + 1, this.pageCount),
 			this.width / 2,
