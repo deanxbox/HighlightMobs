@@ -39,14 +39,14 @@ public final class HighlightMobsClient implements ClientModInitializer {
 			while (toggleKey.consumeClick()) {
 				CONFIG.enabled = !CONFIG.enabled;
 				CONFIG.save();
-				client.gui.hud.setOverlayMessage(
+				client.gui.setOverlayMessage(
 					Component.translatable(CONFIG.enabled ? "highlightmobs.message.enabled" : "highlightmobs.message.disabled"),
 					false
 				);
 			}
 
 			while (settingsKey.consumeClick()) {
-				client.gui.setScreen(new HighlightMobsScreen(client.gui.screen()));
+				client.setScreen(new HighlightMobsScreen(client.screen));
 			}
 		});
 	}
