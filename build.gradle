@@ -19,6 +19,11 @@ modrinth {
 	dependencies {
 		required.project 'fabric-api'
 	}
+    changelog = providers.provider {
+        def text = rootProject.file('CHANGELOG.md').text
+        def matcher = text =~ /(?ms)^## \Q${project.mod_version}\E\s*?\n(.*?)(?=\n## |\z)/
+        matcher.find() ? matcher.group(1).trim() : ''
+    }
 }
 
 base {
