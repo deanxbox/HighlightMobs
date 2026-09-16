@@ -8,7 +8,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLKeycode;
 
 public final class HighlightMobsClient implements ClientModInitializer {
 	public static final String MOD_ID = "highlightmobs";
@@ -24,14 +24,14 @@ public final class HighlightMobsClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.highlightmobs.toggle",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_H,
+			InputConstants.Type.KEYBOARD,
+			SDLKeycode.SDLK_H,
 			CATEGORY
 		));
 		settingsKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.highlightmobs.settings",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_O,
+			InputConstants.Type.KEYBOARD,
+			SDLKeycode.SDLK_O,
 			CATEGORY
 		));
 
