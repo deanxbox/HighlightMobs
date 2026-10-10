@@ -13,9 +13,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 
 public final class HighlightMobsScreen extends Screen {
-	private static final int LIST_TOP = 105;
+	private static final int LIST_TOP = 153;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
 
@@ -73,6 +74,12 @@ public final class HighlightMobsScreen extends Screen {
 			}
 		).bounds(this.contentLeft, 64, this.contentWidth, BUTTON_HEIGHT).build());
 
+		int quickWidth = (this.contentWidth - 4) / 2;
+		this.quickButton("select_passive", 0, 0, quickWidth, type -> isMob(type) && !isHostileOrNeutral(type));
+		this.quickButton("select_hostile", 1, 0, quickWidth, type -> isMob(type) && isHostileOrNeutral(type));
+		this.quickButton("select_non_mobs", 0, 1, quickWidth, type -> !isMob(type));
+		this.quickButton("select_all_mobs", 1, 1, quickWidth, HighlightMobsScreen::isMob);
+
 		int footerY = this.height - 30;
 		int footerButtonWidth = (this.contentWidth - 8) / 3;
 		this.addRenderableWidget(Button.builder(
@@ -119,8 +126,8 @@ public final class HighlightMobsScreen extends Screen {
 			"highlightmobs.settings.selected_count",
 			HighlightMobsClient.CONFIG.highlightedEntityTypes.size()
 		);
-		graphics.drawString(this.font, section, this.contentLeft, 91, -1);
-		graphics.drawString(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 91, -6250336);
+		graphics.drawString(this.font, section, this.contentLeft, 139, -1);
+		graphics.drawString(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 139, -6250336);
 
 		if (this.visibleEntityTypes.isEmpty()) {
 			graphics.drawCenteredString(this.font, Component.translatable("highlightmobs.settings.no_results"), this.width / 2, LIST_TOP + 6, -6250336);
@@ -179,6 +186,34 @@ public final class HighlightMobsScreen extends Screen {
 		}).bounds(this.contentLeft + this.contentWidth - 90, navigationY, 90, BUTTON_HEIGHT).build();
 		next.active = this.page + 1 < this.pageCount;
 		this.entityWidgets.add(this.addRenderableWidget(next));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static boolean isMob(EntityType<?> type) {
+		String id = EntityType.getKey(type).toString();
+		if (id.equals("minecraft:player") || id.equals("minecraft:armor_stand") || id.equals("minecraft:mannequin")) {
+			return false;
+		}
+		// villagers and golems are in the MISC category but have living-entity attributes
+		return type.getCategory() != MobCategory.MISC
+			|| net.minecraft.world.entity.ai.attributes.DefaultAttributes.hasSupplier((EntityType<? extends net.minecraft.world.entity.LivingEntity>) type);
+	}
+	// shortcut: vanilla has no neutral flag, so neutral mobs are listed by hand; extend when new ones are added
+	private static final java.util.Set<String> NEUTRAL = java.util.Set.of(
+		"minecraft:wolf", "minecraft:iron_golem", "minecraft:bee", "minecraft:polar_bear", "minecraft:llama",
+		"minecraft:trader_llama", "minecraft:dolphin", "minecraft:panda", "minecraft:goat", "minecraft:enderman",
+		"minecraft:zombified_piglin", "minecraft:spider", "minecraft:cave_spider"
+	);
+
+	private static boolean isHostileOrNeutral(EntityType<?> type) {
+		return type.getCategory() == MobCategory.MONSTER || NEUTRAL.contains(EntityType.getKey(type).toString());
+	}
+
+	private void quickButton(String key, int col, int row, int width, java.util.function.Predicate<EntityType<?>> filter) {
+		this.addRenderableWidget(Button.builder(Component.translatable("highlightmobs.settings." + key), button -> {
+			HighlightMobsClient.CONFIG.select(BuiltInRegistries.ENTITY_TYPE.stream().filter(filter).toList());
+			this.refreshEntityWidgets();
+		}).bounds(this.contentLeft + col * (width + 4), 88 + row * ROW_SPACING, width, BUTTON_HEIGHT).build());
 	}
 
 	private List<EntityType<?>> filteredEntityTypes() {
