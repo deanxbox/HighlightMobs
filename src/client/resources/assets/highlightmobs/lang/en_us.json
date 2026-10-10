@@ -20,5 +20,9 @@
 	"highlightmobs.settings.next": "Next",
 	"highlightmobs.settings.page": "Page %s of %s",
 	"highlightmobs.settings.clear_selected": "Clear Selected",
+	"highlightmobs.settings.select_passive": "Select All Passive",
+	"highlightmobs.settings.select_hostile": "Select All Neutral/Hostile",
+	"highlightmobs.settings.select_non_mobs": "Select All Non-Mobs",
+	"highlightmobs.settings.select_all_mobs": "Select All Mobs",
 	"highlightmobs.settings.show_selected": "Show Selected: %s"
 }
