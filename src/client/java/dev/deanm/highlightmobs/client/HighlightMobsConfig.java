@@ -66,6 +66,12 @@ final class HighlightMobsConfig {
 		return this.highlightedEntityTypes.contains(EntityType.getKey(type).toString());
 	}
 
+	void select(java.util.Collection<EntityType<?>> types) {
+		this.highlightedEntityTypes.clear();
+		types.forEach(type -> this.highlightedEntityTypes.add(EntityType.getKey(type).toString()));
+		this.save();
+	}
+
 	void toggle(EntityType<?> type) {
 		String id = EntityType.getKey(type).toString();
 		if (!this.highlightedEntityTypes.remove(id)) {
