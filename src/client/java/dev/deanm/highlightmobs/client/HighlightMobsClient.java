@@ -48,6 +48,6 @@ public final class HighlightMobsClient implements ClientModInitializer {
 	}
 
 	public static boolean shouldHighlight(Entity entity) {
-		return CONFIG.isHighlighted(entity.getType());
+		return CONFIG.isHighlighted(entity);
 	}
 }
