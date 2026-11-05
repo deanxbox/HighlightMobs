@@ -399,6 +399,7 @@ final class MobIcons {
 					texture = ResourceLocation.withDefaultNamespace("textures/block/" + (id.equals("tnt") ? "tnt_side" : id) + ".png");
 					resource = textureResource(texture);
 				}
+				boolean block = texture.getPath().startsWith("textures/block/");
 				boolean skull = id.equals("player_head");
 				if (skull) {
 					resource = textureResource(ResourceLocation.withDefaultNamespace("textures/entity/player/wide/steve.png"));
@@ -416,6 +417,9 @@ final class MobIcons {
 							pixels[y * image.getWidth() + x] = argb(image.getPixelRGBA(x, y));
 						}
 					}
+					if (block) {
+						return upload(cropOpaque(pixels, image.getWidth(), image.getHeight()));
+					}
 					return upload(skull ? renderSkull(pixels, image.getWidth(), image.getHeight())
 						: new FaceImage(image.getWidth(), Math.min(image.getWidth(), image.getHeight()), pixels));
 				}
@@ -424,6 +428,30 @@ final class MobIcons {
 				return NONE;
 			}
 		});
+	}
+
+	/** Trims transparent borders so sprites that sit in a corner of their texture (the lightning rod) are centred. */
+	private static FaceImage cropOpaque(int[] pixels, int width, int height) {
+		int minX = width, maxX = -1, minY = height, maxY = -1;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if ((pixels[y * width + x] >>> 24) > 8) {
+					minX = Math.min(minX, x);
+					maxX = Math.max(maxX, x);
+					minY = Math.min(minY, y);
+					maxY = Math.max(maxY, y);
+				}
+			}
+		}
+		if (maxX < 0) {
+			return new FaceImage(width, height, pixels);
+		}
+		int w = maxX - minX + 1, h = maxY - minY + 1;
+		int[] out = new int[w * h];
+		for (int y = 0; y < h; y++) {
+			System.arraycopy(pixels, (minY + y) * width + minX, out, y * w, w);
+		}
+		return new FaceImage(w, h, out);
 	}
 
 	/** The unmodified vanilla model for this entity, baked straight from Mojang's layer definitions. */
@@ -442,7 +470,7 @@ final class MobIcons {
 			return null;
 		}
 		ModelPart root = layer.bakeRoot();
-		if (entity.getPath().equals("enderman") || entity.getPath().equals("bogged")) {
+		if (entity.getPath().equals("bogged")) { // enderman keeps its hat: it is the lower half of the face
 			ModelPart head = root.getChild("head");
 			if (head.hasChild("hat")) {
 				head.getChild("hat").visible = false;
