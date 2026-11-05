@@ -1,6 +1,6 @@
 # HighlightMobs
 
-A client-side Fabric mod for Minecraft 26.2 that outlines selected entity types.
+A client-side Fabric mod for Minecraft 26.1-26.1.2 that outlines selected entity types.
 
 ## Features
 
@@ -21,10 +21,10 @@ The remapped mod jar is written to `build/libs`.
 
 ## Requirements
 
-- Minecraft 26.2
+- Minecraft 26.1-26.1.2
 - Fabric Loader 0.19.3 or newer
 - Fabric API
-- Mod Menu 20.x (optional, for access through the Mods screen)
+- Mod Menu matching your Minecraft version (optional, for access through the Mods screen)
 
 ## Default controls
 

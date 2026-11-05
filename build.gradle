@@ -10,7 +10,7 @@ group = project.maven_group
 modrinth {
 	token = System.getenv('MODRINTH_TOKEN')
 	projectId = 'highlightmobs'
-	versionNumber = "${project.mod_version}+${project.minecraft_version}"
+	versionNumber = "${project.mod_version}+26.1-26.1.2"
 	versionName = project.mod_version
 	versionType = 'release'
 	uploadFile = tasks.jar
@@ -27,7 +27,7 @@ modrinth {
 }
 
 base {
-	archivesName = 'highlightmobs'
+	archivesName = 'highlightmobs-mc26.1-26.1.2'
 }
 
 repositories {
