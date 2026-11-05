@@ -31,6 +31,7 @@ public final class HighlightMobsScreen extends Screen {
 	private EditBox searchBox;
 	private boolean showSelectedOnly;
 	private List<EntityType<?>> visibleEntityTypes = List.of();
+	private final List<Object[]> iconSpots = new ArrayList<>();
 
 	public HighlightMobsScreen(@Nullable Screen parent) {
 		super(Component.translatable("highlightmobs.settings.title"));
@@ -86,8 +87,7 @@ public final class HighlightMobsScreen extends Screen {
 		this.addRenderableWidget(Button.builder(
 			Component.translatable("highlightmobs.settings.clear_selected"),
 			button -> {
-				HighlightMobsClient.CONFIG.highlightedEntityTypes.clear();
-				HighlightMobsClient.CONFIG.save();
+				HighlightMobsClient.CONFIG.clear();
 				this.refreshEntityWidgets();
 			}
 		).bounds(this.contentLeft, footerY, footerButtonWidth, BUTTON_HEIGHT).build());
@@ -130,6 +130,10 @@ public final class HighlightMobsScreen extends Screen {
 		graphics.text(this.font, section, this.contentLeft, 139, -1);
 		graphics.text(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 139, -6250336);
 
+		for (Object[] spot : this.iconSpots) {
+			MobIcons.draw(graphics, (EntityType<?>) spot[0], (int) spot[1], (int) spot[2], 16);
+		}
+
 		if (this.visibleEntityTypes.isEmpty()) {
 			graphics.centeredText(this.font, Component.translatable("highlightmobs.settings.no_results"), this.width / 2, LIST_TOP + 6, -6250336);
 		}
@@ -148,6 +152,7 @@ public final class HighlightMobsScreen extends Screen {
 			this.removeWidget(widget);
 		}
 		this.entityWidgets.clear();
+		this.iconSpots.clear();
 
 		this.visibleEntityTypes = this.filteredEntityTypes();
 		List<EntityType<?>> matches = this.visibleEntityTypes;
@@ -166,12 +171,17 @@ public final class HighlightMobsScreen extends Screen {
 			int x = this.contentLeft + (pageIndex % 2) * (entityButtonWidth + 4);
 			int y = LIST_TOP + (pageIndex / 2) * ROW_SPACING;
 			Button button = Button.builder(this.entityMessage(type), pressed -> {
+				if (MobVariants.has(type)) {
+					this.minecraft.gui.setScreen(new HighlightMobsVariantScreen(this, type));
+					return;
+				}
 				HighlightMobsClient.CONFIG.toggle(type);
 				pressed.setMessage(this.entityMessage(type));
 			}).bounds(x, y, entityButtonWidth, BUTTON_HEIGHT)
 				.tooltip(Tooltip.create(Component.literal(EntityType.getKey(type).toString())))
 				.build();
 			this.entityWidgets.add(this.addRenderableWidget(button));
+			this.iconSpots.add(new Object[] {type, x + 2, y + 2});
 		}
 
 		Button previous = Button.builder(Component.translatable("highlightmobs.settings.previous"), button -> {
@@ -190,7 +200,7 @@ public final class HighlightMobsScreen extends Screen {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static boolean isMob(EntityType<?> type) {
+	static boolean isMob(EntityType<?> type) {
 		String id = EntityType.getKey(type).toString();
 		if (id.equals("minecraft:player") || id.equals("minecraft:armor_stand") || id.equals("minecraft:mannequin")) {
 			return false;
@@ -248,9 +258,10 @@ public final class HighlightMobsScreen extends Screen {
 	}
 
 	private Component entityMessage(EntityType<?> type) {
-		return Component.translatable(
-			HighlightMobsClient.CONFIG.isSelected(type) ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected",
-			type.getDescription()
-		);
+		HighlightMobsConfig config = HighlightMobsClient.CONFIG;
+		String key = config.isPartial(type) ? "highlightmobs.settings.partial"
+			: config.isSelected(type) ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected";
+		Component name = MobVariants.has(type) ? Component.empty().append(type.getDescription()).append(" >") : type.getDescription();
+		return MobIcons.fit(this.font, Component.translatable(key, name), (this.contentWidth - 4) / 2);
 	}
 }
