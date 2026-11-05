@@ -13,10 +13,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import org.jspecify.annotations.Nullable;
 
 public final class HighlightMobsScreen extends Screen {
-	private static final int LIST_TOP = 105;
+	private static final int LIST_TOP = 153;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
 
@@ -30,6 +31,7 @@ public final class HighlightMobsScreen extends Screen {
 	private EditBox searchBox;
 	private boolean showSelectedOnly;
 	private List<EntityType<?>> visibleEntityTypes = List.of();
+	private final List<Object[]> iconSpots = new ArrayList<>();
 
 	public HighlightMobsScreen(@Nullable Screen parent) {
 		super(Component.translatable("highlightmobs.settings.title"));
@@ -74,13 +76,18 @@ public final class HighlightMobsScreen extends Screen {
 			}
 		).bounds(this.contentLeft, 64, this.contentWidth, BUTTON_HEIGHT).build());
 
+		int quickWidth = (this.contentWidth - 4) / 2;
+		this.quickButton("select_passive", 0, 0, quickWidth, type -> isMob(type) && !isHostileOrNeutral(type));
+		this.quickButton("select_hostile", 1, 0, quickWidth, type -> isMob(type) && isHostileOrNeutral(type));
+		this.quickButton("select_non_mobs", 0, 1, quickWidth, type -> !isMob(type));
+		this.quickButton("select_all_mobs", 1, 1, quickWidth, HighlightMobsScreen::isMob);
+
 		int footerY = this.height - 30;
 		int footerButtonWidth = (this.contentWidth - 8) / 3;
 		this.addRenderableWidget(Button.builder(
 			Component.translatable("highlightmobs.settings.clear_selected"),
 			button -> {
-				HighlightMobsClient.CONFIG.highlightedEntityTypes.clear();
-				HighlightMobsClient.CONFIG.save();
+				HighlightMobsClient.CONFIG.clear();
 				this.refreshEntityWidgets();
 			}
 		).bounds(this.contentLeft, footerY, footerButtonWidth, BUTTON_HEIGHT).build());
@@ -120,8 +127,12 @@ public final class HighlightMobsScreen extends Screen {
 			"highlightmobs.settings.selected_count",
 			HighlightMobsClient.CONFIG.highlightedEntityTypes.size()
 		);
-		graphics.text(this.font, section, this.contentLeft, 91, -1);
-		graphics.text(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 91, -6250336);
+		graphics.text(this.font, section, this.contentLeft, 139, -1);
+		graphics.text(this.font, count, this.contentLeft + this.contentWidth - this.font.width(count), 139, -6250336);
+
+		for (Object[] spot : this.iconSpots) {
+			MobIcons.draw(graphics, (EntityType<?>) spot[0], (int) spot[1], (int) spot[2], 16);
+		}
 
 		if (this.visibleEntityTypes.isEmpty()) {
 			graphics.centeredText(this.font, Component.translatable("highlightmobs.settings.no_results"), this.width / 2, LIST_TOP + 6, -6250336);
@@ -141,6 +152,7 @@ public final class HighlightMobsScreen extends Screen {
 			this.removeWidget(widget);
 		}
 		this.entityWidgets.clear();
+		this.iconSpots.clear();
 
 		this.visibleEntityTypes = this.filteredEntityTypes();
 		List<EntityType<?>> matches = this.visibleEntityTypes;
@@ -159,12 +171,17 @@ public final class HighlightMobsScreen extends Screen {
 			int x = this.contentLeft + (pageIndex % 2) * (entityButtonWidth + 4);
 			int y = LIST_TOP + (pageIndex / 2) * ROW_SPACING;
 			Button button = Button.builder(this.entityMessage(type), pressed -> {
+				if (MobVariants.has(type)) {
+					this.minecraft.gui.setScreen(new HighlightMobsVariantScreen(this, type));
+					return;
+				}
 				HighlightMobsClient.CONFIG.toggle(type);
 				pressed.setMessage(this.entityMessage(type));
 			}).bounds(x, y, entityButtonWidth, BUTTON_HEIGHT)
 				.tooltip(Tooltip.create(Component.literal(EntityType.getKey(type).toString())))
 				.build();
 			this.entityWidgets.add(this.addRenderableWidget(button));
+			this.iconSpots.add(new Object[] {type, x + 2, y + 2});
 		}
 
 		Button previous = Button.builder(Component.translatable("highlightmobs.settings.previous"), button -> {
@@ -180,6 +197,34 @@ public final class HighlightMobsScreen extends Screen {
 		}).bounds(this.contentLeft + this.contentWidth - 90, navigationY, 90, BUTTON_HEIGHT).build();
 		next.active = this.page + 1 < this.pageCount;
 		this.entityWidgets.add(this.addRenderableWidget(next));
+	}
+
+	@SuppressWarnings("unchecked")
+	static boolean isMob(EntityType<?> type) {
+		String id = EntityType.getKey(type).toString();
+		if (id.equals("minecraft:player") || id.equals("minecraft:armor_stand") || id.equals("minecraft:mannequin")) {
+			return false;
+		}
+		// villagers and golems are in the MISC category but have living-entity attributes
+		return type.getCategory() != MobCategory.MISC
+			|| net.minecraft.world.entity.ai.attributes.DefaultAttributes.hasSupplier((EntityType<? extends net.minecraft.world.entity.LivingEntity>) type);
+	}
+	// shortcut: vanilla has no neutral flag, so neutral mobs are listed by hand; extend when new ones are added
+	private static final java.util.Set<String> NEUTRAL = java.util.Set.of(
+		"minecraft:wolf", "minecraft:iron_golem", "minecraft:bee", "minecraft:polar_bear", "minecraft:llama",
+		"minecraft:trader_llama", "minecraft:dolphin", "minecraft:panda", "minecraft:goat", "minecraft:enderman",
+		"minecraft:zombified_piglin", "minecraft:spider", "minecraft:cave_spider"
+	);
+
+	private static boolean isHostileOrNeutral(EntityType<?> type) {
+		return type.getCategory() == MobCategory.MONSTER || NEUTRAL.contains(EntityType.getKey(type).toString());
+	}
+
+	private void quickButton(String key, int col, int row, int width, java.util.function.Predicate<EntityType<?>> filter) {
+		this.addRenderableWidget(Button.builder(Component.translatable("highlightmobs.settings." + key), button -> {
+			HighlightMobsClient.CONFIG.select(BuiltInRegistries.ENTITY_TYPE.stream().filter(filter).toList());
+			this.refreshEntityWidgets();
+		}).bounds(this.contentLeft + col * (width + 4), 88 + row * ROW_SPACING, width, BUTTON_HEIGHT).build());
 	}
 
 	private List<EntityType<?>> filteredEntityTypes() {
@@ -213,9 +258,10 @@ public final class HighlightMobsScreen extends Screen {
 	}
 
 	private Component entityMessage(EntityType<?> type) {
-		return Component.translatable(
-			HighlightMobsClient.CONFIG.isSelected(type) ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected",
-			type.getDescription()
-		);
+		HighlightMobsConfig config = HighlightMobsClient.CONFIG;
+		String key = config.isPartial(type) ? "highlightmobs.settings.partial"
+			: config.isSelected(type) ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected";
+		Component name = MobVariants.has(type) ? Component.empty().append(type.getDescription()).append(" >") : type.getDescription();
+		return MobIcons.fit(this.font, Component.translatable(key, name), (this.contentWidth - 4) / 2);
 	}
 }
