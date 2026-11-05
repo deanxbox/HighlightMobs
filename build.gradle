@@ -10,10 +10,10 @@ group = project.maven_group
 modrinth {
 	token = System.getenv('MODRINTH_TOKEN')
 	projectId = 'highlightmobs'
-	versionNumber = "${project.mod_version}+${project.minecraft_version}"
+	versionNumber = "${project.mod_version}+1.21.6-1.21.8"
 	versionName = project.mod_version
 	versionType = 'release'
-	uploadFile = tasks.jar
+	uploadFile = tasks.remapJar
 	gameVersions = project.property('game_versions').toString().split(',').collect { it.trim() }
 	loaders = ['fabric']
 	dependencies {
@@ -27,7 +27,7 @@ modrinth {
 }
 
 base {
-	archivesName = 'highlightmobs'
+	archivesName = 'highlightmobs-mc1.21.6-1.21.8'
 }
 
 repositories {
