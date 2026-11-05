@@ -13,7 +13,7 @@ modrinth {
 	versionNumber = "${project.mod_version}+${project.minecraft_version}"
 	versionName = project.mod_version
 	versionType = 'release'
-	uploadFile = tasks.jar
+	uploadFile = tasks.remapJar
 	gameVersions = project.property('game_versions').toString().split(',').collect { it.trim() }
 	loaders = ['fabric']
 	dependencies {
