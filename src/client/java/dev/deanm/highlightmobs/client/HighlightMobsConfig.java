@@ -27,6 +27,7 @@ final class HighlightMobsConfig {
 	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("highlightmobs.json");
 
 	boolean enabled = true;
+	boolean showSelectedOnly;
 	Set<String> highlightedEntityTypes = new HashSet<>();
 	// entity id -> selected variant ids; no entry means every variant of a selected type
 	Map<String, Set<String>> highlightedVariants = new HashMap<>();
