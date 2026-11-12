@@ -59,6 +59,8 @@ public final class FaceIconCheck {
 			require(enderman.width() == 8 && enderman.height() == 8, "Enderman must not include the unused hat");
 			require(Arrays.stream(enderman.pixels()).anyMatch(c -> ((c >>> 16) & 255) > ((c >>> 8) & 255) + 50),
 				"Enderman purple eye overlay is missing");
+			var creaking = render(jar, "creaking", "creaking/creaking.png");
+			require(creaking.width() == 6 && creaking.height() == 13, "Creaking twig wings must not shrink its face");
 			var bogged = render(jar, "bogged", "skeleton/bogged.png");
 			require(bogged.width() == 8 && bogged.height() == 8, "Bogged must include its moss face layer, but not mushrooms or unused hat");
 			require(MobIcons.overlayPixel(0xFF123456, 0) == 0xFF123456, "Transparent overlays must preserve the base");
@@ -118,7 +120,7 @@ public final class FaceIconCheck {
 		}
 		var root = MobIcons.vanillaModel(Identifier.withDefaultNamespace(mob));
 		require(root != null, "Missing vanilla model: " + mob);
-		var face = MobIcons.renderFace(root, pixels, image.getWidth(), image.getHeight());
+		var face = MobIcons.renderFace(root, pixels, image.getWidth(), image.getHeight(), mob.equals("creaking"));
 		require(face != null, "Missing face: " + mob);
 		return face;
 	}
