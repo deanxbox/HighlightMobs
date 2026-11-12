@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.5
+
+- Fixed the enderman icon.
+- The Show Selected filter now persists between sessions.
+- Selection buttons now use red for unselected and green for selected mobs and variants. Partially selected mob entries remain green.
+
 ## 1.0.4
 
 - Added per-variant highlighting: clicking a mob with variants (wolves, cats, frogs, horses and more) opens a variant screen with an option to select all or none. Choices are saved.
