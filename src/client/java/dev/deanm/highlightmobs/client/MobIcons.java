@@ -47,7 +47,7 @@ final class MobIcons {
 	}
 
 	private record Quad(float minX, float maxX, float minY, float maxY, float depth,
-			float uLeft, float uRight, float vTop, float vBottom) {
+			float uLeft, float uRight, float vTop, float vBottom, boolean flat) {
 		float area() {
 			return (maxX - minX) * (maxY - minY);
 		}
@@ -292,7 +292,7 @@ final class MobIcons {
 				}
 			}
 			face = skull ? renderSkull(pixels, source.getWidth(), source.getHeight())
-				: renderFace(root, pixels, source.getWidth(), source.getHeight());
+				: renderFace(root, pixels, source.getWidth(), source.getHeight(), key.getPath().equals("creaking"));
 		}
 		if (face == null) {
 			return null;
@@ -472,6 +472,10 @@ final class MobIcons {
 
 	/** Flattens the front of the model's head into a small image. Pure, so it can be checked outside the game. */
 	static FaceImage renderFace(ModelPart root, int[] texture, int textureWidth, int textureHeight) {
+		return renderFace(root, texture, textureWidth, textureHeight, false);
+	}
+
+	static FaceImage renderFace(ModelPart root, int[] texture, int textureWidth, int textureHeight, boolean dropFlat) {
 		List<Quad> headQuads = new ArrayList<>();
 		List<Quad> allQuads = new ArrayList<>();
 		Vector3f point = new Vector3f();
@@ -528,7 +532,7 @@ final class MobIcons {
 					if (Math.abs(ys[i] - minY) < 0.01F) { vTop += vertices[i].v(); nt++; }
 					if (Math.abs(ys[i] - maxY) < 0.01F) { vBottom += vertices[i].v(); nb++; }
 				}
-				Quad quad = new Quad(minX, maxX, minY, maxY, z, uLeft / nl, uRight / nr, vTop / nt, vBottom / nb);
+				Quad quad = new Quad(minX, maxX, minY, maxY, z, uLeft / nl, uRight / nr, vTop / nt, vBottom / nb, cube.minZ == cube.maxZ);
 				allQuads.add(quad);
 				if (head) {
 					headQuads.add(quad);
@@ -536,6 +540,9 @@ final class MobIcons {
 			}
 		});
 
+		if (dropFlat) { // the creaking's zero-depth twig wings dwarf its face; bat ears are flat too, so this is opt-in
+			headQuads.removeIf(Quad::flat);
+		}
 		List<Quad> quads = headQuads;
 		if (quads.isEmpty()) {
 			// no part called "head" (slimes, fish, ghasts...): use the biggest front face of the whole model
@@ -567,8 +574,9 @@ final class MobIcons {
 		List<Quad> ordered = new ArrayList<>(quads);
 		ordered.sort(Comparator.comparingDouble(Quad::depth).reversed());
 		for (Quad quad : ordered) {
-			int x0 = Math.round((quad.minX() - left) * scale), x1 = Math.max(x0 + 1, Math.round((quad.maxX() - left) * scale));
-			int y0 = Math.round((quad.minY() - top) * scale), y1 = Math.max(y0 + 1, Math.round((quad.maxY() - top) * scale));
+			// floor/ceil so a shrunken layer (the enderman's 7px jaw) fills its pixel grid without a gap on one side
+			int x0 = (int) Math.floor((quad.minX() - left) * scale + 1.0E-3F), x1 = Math.max(x0 + 1, (int) Math.ceil((quad.maxX() - left) * scale - 1.0E-3F));
+			int y0 = (int) Math.floor((quad.minY() - top) * scale + 1.0E-3F), y1 = Math.max(y0 + 1, (int) Math.ceil((quad.maxY() - top) * scale - 1.0E-3F));
 			for (int py = y0; py < y1 && py < height; py++) {
 				for (int px = x0; px < x1 && px < width; px++) {
 					float fx = (px + 0.5F - x0) / (x1 - x0);

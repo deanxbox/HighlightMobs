@@ -28,7 +28,7 @@ public final class HighlightMobsScreen extends Screen {
 	private int contentLeft;
 	private int contentWidth;
 	private EditBox searchBox;
-	private boolean showSelectedOnly;
+	private boolean showSelectedOnly = HighlightMobsClient.CONFIG.showSelectedOnly;
 	private List<EntityType<?>> visibleEntityTypes = List.of();
 	private final List<Object[]> iconSpots = new ArrayList<>();
 
@@ -94,6 +94,8 @@ public final class HighlightMobsScreen extends Screen {
 			this.showSelectedMessage(),
 			button -> {
 				this.showSelectedOnly = !this.showSelectedOnly;
+				HighlightMobsClient.CONFIG.showSelectedOnly = this.showSelectedOnly;
+				HighlightMobsClient.CONFIG.save();
 				button.setMessage(this.showSelectedMessage());
 				this.page = 0;
 				this.refreshEntityWidgets();
@@ -261,6 +263,8 @@ public final class HighlightMobsScreen extends Screen {
 		String key = config.isPartial(type) ? "highlightmobs.settings.partial"
 			: config.isSelected(type) ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected";
 		Component name = MobVariants.has(type) ? Component.empty().append(type.getDescription()).append(" >") : type.getDescription();
-		return MobIcons.fit(this.font, Component.translatable(key, name), (this.contentWidth - 4) / 2);
+		// fit() flattens styling, so colour afterwards: green = selected (or partly), red = not selected
+		return MobIcons.fit(this.font, Component.translatable(key, name), (this.contentWidth - 4) / 2)
+			.copy().withColor(config.isSelected(type) ? 0x55FF55 : 0xFF5555);
 	}
 }

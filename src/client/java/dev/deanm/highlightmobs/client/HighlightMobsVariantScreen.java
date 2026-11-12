@@ -126,9 +126,10 @@ final class HighlightMobsVariantScreen extends Screen {
 	}
 
 	private Component variantMessage(String variant) {
+		boolean selected = HighlightMobsClient.CONFIG.isVariantSelected(this.type, variant);
 		return MobIcons.fit(this.font, Component.translatable(
-			HighlightMobsClient.CONFIG.isVariantSelected(this.type, variant) ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected",
+			selected ? "highlightmobs.settings.selected" : "highlightmobs.settings.unselected",
 			MobVariants.label(variant)
-		), (this.contentWidth - 4) / 2);
+		), (this.contentWidth - 4) / 2).copy().withColor(selected ? 0x55FF55 : 0xFF5555);
 	}
 }
